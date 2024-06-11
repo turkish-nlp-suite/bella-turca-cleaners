@@ -1,11 +1,12 @@
 import re
 
 
-def clean_after_latin(text):
-  text = re.sub(r"[\u0530-\uFFFF](?![Ff])", " ", text) # kill emoji
-  text = re.sub(r"[\u0400-\u058F]", " ", text)  # preserve Greek
-  return text
 
+def clean_after_latin(text):
+    emoticon_pattern = r"[\U0001F600-\U0001F64F\U0001F300-\U0001F5FF\U0001F680-\U0001F6FF\U0001F1E0-\U0001F1FF]+"
+    text = re.sub(emoticon_pattern, " ", text)
+    text = re.sub(r"[\u0530-\uFFFF]", " ", text)  # kill emoji and preserve Greek
+    return text
 
 def clean_after_latin_with_emojis(text):
 
