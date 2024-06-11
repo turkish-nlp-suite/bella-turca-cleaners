@@ -1,0 +1,8 @@
+replace:
+  - extras: "no"
+delete:
+  - extras: "no"
+custom_code: "yes"
+crop_header: "yes"
+crop_footer: "yes"
+keep_emojis: "no"
