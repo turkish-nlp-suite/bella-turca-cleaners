@@ -1,27 +1,34 @@
-from bella_cleaner.cleaner.commons import common_clean
-
+import re, os, yaml, importlib
 import unicodedata
-import re, os
 
+from bella_cleaner.cleaner.commons import common_clean
+from bella_cleaner.cleaner.commons.latin_chars import clean_after_latin, clean_after_latin_with_emojis
 
 
 class Cleaner:
-  def __init__(self, base_dir= "turkish_corpus_cleaner", config_file=None):
+  def __init__(self, base_dir= "turkish_corpus_cleaner", config_name=None):
+    # Setup some dirs
     cleaner_dir = os.path.join(base_dir,  "bella_cleaner", "cleaner")
     self.commons_dir = os.path.join(cleaner_dir,  "commons")
-    self.configs_dir = os.path.join(cleaner_dir, "configs")
-    self.config = None  # cleaning configuration
-    self.custom_config = False  # 
-    self.custom_code = False
+    configs_dir = os.path.join(cleaner_dir, "configs")
 
+    # Load from commons dir
     self.load_commons()
-    '''
-    if config_file is not None:
-      self.load_config(config_file)
+
+    # Setup defaults
+    id_func = lambda x: x
+    self.crop_header, self.crop_footer = id_func, id_func
+
+    self.kill_non_latin_chars =  clean_after_latin # default is to KILL emoticon
+    self.custom_clean = id_func  # no custom code, read from config
+
+    # Load and arrange custom config
+    if config_name is not None:
+      self.custom_dir =  os.path.join(configs_dir, config_name)
+      self.custom_mod = "bella_cleaner.cleaner.configs." + config_name 
+      self.load_extra_config()
+      self.eval_custom_config()
       self.configure_extras()
-    '''
-
-
 
 
   def load_commons(self):
@@ -49,24 +56,86 @@ class Cleaner:
     return text
 
 
-  def crop_heading(self, text):
-    pass
+  def load_extra_config(self):
+    yaml_file = os.path.join(self.custom_dir, "custom.yaml")  
+
+    with open(yaml_file, "r") as f:
+      self.custom_config = yaml.safe_load(f)
 
 
-  def crop_footer(self, text):
-    pass
+  def eval_custom_config(self):
+    yaml_keys = self.custom_config.keys()
+    list_of_keys = ["replace", "delete", "custom_code", "crop_header", "crop_footer", "keep_emojis"]
+    assert all(key in list_of_keys for key in yaml_keys), "Custom config keys should be replace, delete, custom_code, crop_header, crop_footer, keep_emojis"
 
   def configure_extras(self):
-    pass
+    self.replace_extra = self.custom_config.get("replace", None)
+    self.delete_extra = self.custom_config.get("delete", None)
+    self.handle_extra_reps_dels()
 
-  def load_config(self, cfg_file):
-    pass
+    self.custom_code = self.custom_config.get("custom_code", False)
+    self.handle_custom_code()
+
+    self.cropf, self.croph = self.custom_config.get("crop_footer", "no"), self.custom_config.get("crop_header", "no")
+    self.handle_croppers()
+
+    # Arrange keeping emojis
+    self.keep_emojis = self.custom_config.get("keep_emojis", "no")
+    self.kill_non_latin_chars = clean_after_latin_with_emojis if self.keep_emojis == "yes" else clean_after_latin
+
+  def handle_custom_code(self):
+    module = importlib.import_module(self.custom_mod + ".custom_clean", package="bella_cleaner")
+    self.custom_clean = module.custom_clean
+
+  def handle_croppers(self):
+    if self.cropf == "yes":
+      module = importlib.import_module(self.custom_mod + ".footer", package="bella_cleaner")
+      self.crop_footer = module.crop_footer
+      
+    if self.croph == "yes":
+      module = importlib.import_module(self.custom_mod + ".header", package="bella_cleaner")
+      self.crop_header = module.crop_header
+
+    
+  def handle_extra_reps_dels(self):
+    if self.replace_extra:
+      extras = self.replace_extra[0]["extras"]
+      if extras in ["append", "override"]:
+        replace_file = os.path.join(self.custom_dir, "replace.txt")
+        new_pairs = open(replace_file, "r").read().split("\n")
+        replacements = [tuple(" ".join(line.strip().split()).split(" ")) for line in new_pairs if line]
+      if extras == "append":
+        self.replacements += replacements
+      elif extras == "override":
+        self.replacements = replacements
+    if self.delete_extra:
+      extras = self.delete_extra[0]["extras"]
+      if extras in ["append", "override"]:
+        delete_file = os.path.join(self.custom_dir, "delete.txt")
+        new_dels = open(replace_file, "r").read().split("\n")
+        deletions = [line.strip() for line in new_dels if line]
+      if extras == "append":
+        self.deletions += deletions
+      elif extras == "override":
+        self.deletions = deletions
+
 
   def clean(self, text):
-    text = self.make_replacements(text)
-    text = self.make_deletions(text)
-    text = common_clean(text)
-    #text = self.custom_clean(text)
-    text = unicodedata.normalize("NFKC", text)
+    # Crop header and footer
+    text = self.crop_footer(text)
+    text = self.crop_header(text)
+
+    # Repacements and deletions
+    text = self.make_replacements(text)  # make the replacements
+    text = self.make_deletions(text)     # make the deletions
+    text = common_clean(text)            # further text cleaning such as punct cleaning 
+
+    # Custom code if any
+    text = self.custom_clean(text)
+
+
+    # Unicode cleaning
+    text = self.kill_non_latin_chars(text)   # eliminate character blocks based on unicode ranges, keep emojis or not by config
+    text = unicodedata.normalize("NFKC", text)  # unicode normalization
     text = " ".join(text.split())
     return text
