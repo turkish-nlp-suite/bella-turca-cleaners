@@ -1,0 +1,11 @@
+replace:
+  - extras: "no"
+delete:
+  - extras: "no"
+custom_code: "yes"
+keep_emoticon: "no"
+has_pages: "yes"
+kill_foreign_chars:
+ - arabic
+ - chinese
+ - korean

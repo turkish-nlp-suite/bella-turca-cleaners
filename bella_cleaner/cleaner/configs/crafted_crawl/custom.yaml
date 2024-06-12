@@ -1,0 +1,12 @@
+replace:
+  - extras: "no"
+delete:
+  - extras: "no"
+custom_code: "yes"
+keep_emoticon: "yes"
+crop_header_footer:
+ - footer
+kill_foreign_chars:
+ - arabic
+ - chinese
+ - korean

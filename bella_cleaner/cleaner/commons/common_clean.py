@@ -20,6 +20,10 @@ def place_space_before_new_sent(text):
   text = re.sub(r"([,.!])([^\W\d])", r"\1 \2", text) 
   return text
 
+def clean_geo_shapes(text):
+  text = re.sub(r"[\u25A0-\u25CF]", " ", text)
+  return text
+
 
 def replace_multiple_puncts(text):
  # No processing for too many ? and !s, as they have sentimental meaning
@@ -30,6 +34,7 @@ def replace_multiple_puncts(text):
 
 
 def common_clean(text):
+  text = clean_geo_shapes(text)
   text = clean_visual_chars(text)
   text = clean_braille(text)
   text = replace_multiple_puncts(text)

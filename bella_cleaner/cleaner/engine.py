@@ -1,8 +1,9 @@
-import re, os, yaml, importlib
+import re, os, yaml, importlib, functools
 import unicodedata
 
 from bella_cleaner.cleaner.commons import common_clean
 from bella_cleaner.cleaner.commons.latin_chars import clean_after_latin, clean_after_latin_with_emojis
+from bella_cleaner.cleaner.commons.foreign_char_handling import clean_chinese_chars, clean_korean_chars, clean_arabic_chars
 
 
 class Cleaner:
@@ -21,6 +22,11 @@ class Cleaner:
 
     self.kill_non_latin_chars =  clean_after_latin # default is to KILL emoticon
     self.custom_clean = id_func  # no custom code, read from config
+
+    self.kill_foreign_chars = id_func # customly, korean, combination of killing chinese or arabic chars
+
+    self.has_pages=False # book or article, coming from a pdf most probably
+    self.process_pages=id_func
 
     # Load and arrange custom config
     if config_name is not None:
@@ -65,8 +71,8 @@ class Cleaner:
 
   def eval_custom_config(self):
     yaml_keys = self.custom_config.keys()
-    list_of_keys = ["replace", "delete", "custom_code", "crop_header", "crop_footer", "keep_emojis"]
-    assert all(key in list_of_keys for key in yaml_keys), "Custom config keys should be replace, delete, custom_code, crop_header, crop_footer, keep_emojis"
+    list_of_keys = ["replace", "delete", "custom_code", "crop_header_footer", "keep_emoticon", "kill_foreign_chars", "has_pages"]
+    assert all(key in list_of_keys for key in yaml_keys), "Custom config keys should be replace, delete, custom_code, crop_header_footer, keep_emoticon, kill_foreign_chars, has_pages"
 
   def configure_extras(self):
     self.replace_extra = self.custom_config.get("replace", None)
@@ -76,25 +82,55 @@ class Cleaner:
     self.custom_code = self.custom_config.get("custom_code", False)
     self.handle_custom_code()
 
-    self.cropf, self.croph = self.custom_config.get("crop_footer", "no"), self.custom_config.get("crop_header", "no")
+    self.crophf = self.custom_config.get("crop_header_footer", [])
     self.handle_croppers()
 
     # Arrange keeping emojis
     self.keep_emojis = self.custom_config.get("keep_emojis", "no")
     self.kill_non_latin_chars = clean_after_latin_with_emojis if self.keep_emojis == "yes" else clean_after_latin
 
+    self.kill_fc = self.custom_config.get("kill_foreign_chars", [])
+    self.handle_foreign_chars()
+
+    has_pages = sef.custom_config.get("has_pages", "no")
+    self.pages = True if has_pages=="yes" else False
+    self.handle_page_code()
+
+  def handle_page_code():
+    module = importlib.import_module(self.custom_mod + ".pages", package="bella_cleaner")
+    self.process_pages = module.process_pages
+
+
   def handle_custom_code(self):
     module = importlib.import_module(self.custom_mod + ".custom_clean", package="bella_cleaner")
     self.custom_clean = module.custom_clean
 
   def handle_croppers(self):
-    if self.cropf == "yes":
-      module = importlib.import_module(self.custom_mod + ".footer", package="bella_cleaner")
-      self.crop_footer = module.crop_footer
+    if self.crophf:
+      if "footer" in self.crophf:
+        module = importlib.import_module(self.custom_mod + ".footer", package="bella_cleaner")
+        self.crop_footer = module.crop_footer
       
-    if self.croph == "yes":
-      module = importlib.import_module(self.custom_mod + ".header", package="bella_cleaner")
-      self.crop_header = module.crop_header
+      if "header" in self.crophf:
+        module = importlib.import_module(self.custom_mod + ".header", package="bella_cleaner")
+        self.crop_header = module.crop_header
+
+  def handle_foreign_chars(self):
+    def compose2(f, g):
+      return lambda *a, **kw: f(g(*a, **kw))
+
+    def compose(*fs):
+      return functools.reduce(compose2, fs)
+
+    func_list = []
+    if self.kill_fc:
+      if "arabic" in self.kill_fc:
+        func_list.append(clean_arabic_chars)
+      if "chinese" in self.kill_fc:
+        func_list.append(clean_chinese_chars)
+      if "korean" in self.kill_fc:
+        func_list.append(clean_korean_chars)
+    self.kill_foreign_chars  =  compose(func_list)
 
     
   def handle_extra_reps_dels(self):
@@ -119,23 +155,40 @@ class Cleaner:
       elif extras == "override":
         self.deletions = deletions
 
-
-  def clean(self, text):
-    # Crop header and footer
-    text = self.crop_footer(text)
-    text = self.crop_header(text)
+  def _clean(self, text):
+    text = text.strip()
 
     # Repacements and deletions
     text = self.make_replacements(text)  # make the replacements
     text = self.make_deletions(text)     # make the deletions
     text = common_clean(text)            # further text cleaning such as punct cleaning 
+    text = text.strip()
 
     # Custom code if any
     text = self.custom_clean(text)
 
-
     # Unicode cleaning
+    text = self.kill_foreign_chars(text)  # kill arabic, korean or chinese chars exclusively
     text = self.kill_non_latin_chars(text)   # eliminate character blocks based on unicode ranges, keep emojis or not by config
     text = unicodedata.normalize("NFKC", text)  # unicode normalization
     text = " ".join(text.split())
+    return text
+
+
+  def clean(self, resource):
+    # if self.has_pages True, then at this point input is not a text indeed list of pages. At the end output is text, pages united.
+    text = self.process_pages(resource)
+
+    # Crop header and footer, keep an eye on newlines and structure
+    text = text.strip()
+    text = self.crop_footer(text)
+    text = text.strip()
+    text = self.crop_header(text)
+
+    # map brutal clean to all paragraphs
+    paragraphs = text.strip().split("\n")
+    paragraphs = list(map(_clean, paragraphs))
+    paragraphs = [parag in for parag in paragraphs if parag]
+
+    text = "\n".join(paragraphs)
     return text
