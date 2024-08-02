@@ -8,15 +8,15 @@ from bella_cleaner.cleaner.commons.foreign_char_handling import clean_chinese_ch
 
 class Cleaner:
   def __init__(self, base_dir= "turkish_corpus_cleaner", config_name=None):
-    # Setup some dirs
+    # Set up config dirs
     cleaner_dir = os.path.join(base_dir,  "bella_cleaner", "cleaner")
     self.commons_dir = os.path.join(cleaner_dir,  "commons")
     configs_dir = os.path.join(cleaner_dir, "configs")
 
-    # Load from commons dir
+    # Load from config dirs
     self.load_commons()
 
-    # Setup defaults
+    # Set up defaults
     id_func = lambda x: x
     self.crop_header, self.crop_footer = id_func, id_func
 
@@ -38,7 +38,7 @@ class Cleaner:
 
 
   def load_commons(self):
-    # Load common config files
+    # Load common config files, replacements and deletions
     replace_file = os.path.join(self.commons_dir, "replace.txt")
     delete_file = os.path.join(self.commons_dir, "delete.txt")
 
@@ -56,7 +56,7 @@ class Cleaner:
     return text
 
   def make_deletions(self, text):
-    # Kill some characters
+    # Kill bad characters
     for delch in  self.deletions:
       text = text.replace(delch, " ")
     return text
@@ -65,16 +65,24 @@ class Cleaner:
   def load_extra_config(self):
     yaml_file = os.path.join(self.custom_dir, "custom.yaml")  
 
-    with open(yaml_file, "r") as f:
-      self.custom_config = yaml.safe_load(f)
+    # Search for the custom config yaml
+    if os.path.exists(yaml_file):
+      # Load config yaml if exists
+      with open(yaml_file, "r") as f:
+        self.custom_config = yaml.safe_load(f)
+    else:
+        self.custom_config = {}
 
 
   def eval_custom_config(self):
+    # validate the configuration file
     yaml_keys = self.custom_config.keys()
     list_of_keys = ["replace", "delete", "custom_code", "crop_header_footer", "keep_emoticon", "kill_foreign_chars", "has_pages"]
     assert all(key in list_of_keys for key in yaml_keys), "Custom config keys should be replace, delete, custom_code, crop_header_footer, keep_emoticon, kill_foreign_chars, has_pages"
 
   def configure_extras(self):
+    if not self.custom_config: return
+
     self.replace_extra = self.custom_config.get("replace", None)
     self.delete_extra = self.custom_config.get("delete", None)
     self.handle_extra_reps_dels()
@@ -92,14 +100,14 @@ class Cleaner:
     self.kill_fc = self.custom_config.get("kill_foreign_chars", [])
     self.handle_foreign_chars()
 
-    has_pages = sef.custom_config.get("has_pages", "no")
+    has_pages = self.custom_config.get("has_pages", "no")
     self.pages = True if has_pages=="yes" else False
     self.handle_page_code()
 
-  def handle_page_code():
+  def handle_page_code(self):
+    if not self.pages: return
     module = importlib.import_module(self.custom_mod + ".pages", package="bella_cleaner")
     self.process_pages = module.process_pages
-
 
   def handle_custom_code(self):
     module = importlib.import_module(self.custom_mod + ".custom_clean", package="bella_cleaner")
@@ -130,7 +138,7 @@ class Cleaner:
         func_list.append(clean_chinese_chars)
       if "korean" in self.kill_fc:
         func_list.append(clean_korean_chars)
-    self.kill_foreign_chars  =  compose(func_list)
+      self.kill_foreign_chars  =  compose(func_list)
 
     
   def handle_extra_reps_dels(self):
@@ -187,8 +195,8 @@ class Cleaner:
 
     # map brutal clean to all paragraphs
     paragraphs = text.strip().split("\n")
-    paragraphs = list(map(_clean, paragraphs))
-    paragraphs = [parag in for parag in paragraphs if parag]
+    paragraphs = list(map(self._clean, paragraphs))
+    paragraphs = [parag for parag in paragraphs if parag]
 
     text = "\n".join(paragraphs)
     return text
