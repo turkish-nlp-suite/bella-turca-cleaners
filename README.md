@@ -57,7 +57,7 @@ For each of these fields, if you want to include custom code you put it under th
 
 
 ### Examples
-Please navigate to [Examples](https://github.com/turkish-nlp-suite/bella-turca-cleaners/tree/main/examples) directory. We included examples of book, academic article and web scrape examples.
+Please navigate to [Examples](https://github.com/turkish-nlp-suite/bella-turca-cleaners/tree/main/examples/cleaner) directory. We included examples of book, academic article and web scrape examples.
 
 
 ## Filtering code
