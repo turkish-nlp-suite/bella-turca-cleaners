@@ -13,3 +13,14 @@ def find_comment_index(lines):
     elif line.endswith(yorum_lines):
       return ind
   return None
+
+
+def crop_footer(text):
+  if not text: return text
+  lines = text.split("\n")
+  ci = find_comment_index(lines)
+  if ci:
+    lines = lines[:ci]
+  text = "\n".join(lines)
+  return text
+
