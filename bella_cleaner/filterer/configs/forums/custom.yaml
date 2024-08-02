@@ -1,0 +1,6 @@
+length:
+  - document:
+     - word_limit: 30
+  - sentence:
+    - word_limit: 5
+

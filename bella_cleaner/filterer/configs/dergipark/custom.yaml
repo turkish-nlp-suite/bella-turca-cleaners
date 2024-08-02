@@ -1,0 +1,11 @@
+topic:
+  - document
+length:
+  - document:
+     - word_limit: 20
+quality:
+  - document
+lang:
+  - sentence
+  - document
+

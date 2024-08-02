@@ -1,0 +1,11 @@
+topic:
+  - document
+length:
+  - sentence:
+    - char_limit: 5 
+quality:
+  - document
+  - sentence
+lang:
+  - sentence
+
