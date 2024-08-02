@@ -179,7 +179,7 @@ class Cleaner:
   def _clean(self, text):
     text = text.strip()
 
-    # Repacements and deletions
+    # Replacements and deletions
     text = self.make_replacements(text)  # make the replacements
     text = self.make_deletions(text)     # make the deletions
     text = common_clean(text)            # further text cleaning such as punct cleaning 
