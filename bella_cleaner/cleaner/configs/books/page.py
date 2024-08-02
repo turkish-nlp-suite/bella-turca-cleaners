@@ -1,10 +1,10 @@
 import re
 
 
-# Looks like footer:  comes after -\n
-#136 Etienne s.30.
 
 def looks_like_a_footer(line):
+  # Looks like footer:  comes after -\n
+  #136 Etienne s.30.
   if re.match(r"(\d+|[-*(]) ", line) and re.search(r"(s.|sayfa) ?\d+ \.?$", line):
     return True
   return False
@@ -20,6 +20,7 @@ def ends_with_dash(line):
   return False
 
 def cut_footer(lines, has_dashes):
+  # Cut the footer text from the last page
   if has_dashes:
     footer_ind = None
     last_five_lines = lines[-15:]
@@ -52,6 +53,7 @@ def is_number(line):
   return line.isdigit() or is_roman_digits(line)
 
 def looks_author_or_pub_name(line):
+   # return if the line looks like book metadata
    words = line.split()
    words = [word for word in words if word not in ["ve", "ile"]]
    newl = " ".join(words)
@@ -59,6 +61,7 @@ def looks_author_or_pub_name(line):
 
 
 def cut_header(lines):
+  # Cut page numbe and  metadata looking lines from the list of lines of the page
   if len(lines) < 2:
     return lines
 
@@ -110,6 +113,7 @@ def is_ending_zero(line):
 
 
 def unite_lines(lines, has_dashes):
+  # Unite the continuing lines, separated with a dash or a zero width space e.g. oku- (next line)yordu.
   page_text = ""
   if has_dashes:
     prev_dash = False
@@ -138,6 +142,7 @@ def unite_lines(lines, has_dashes):
 
 
 def process_single_page(page, has_dashes):
+  # Cut headers and footers from a page, also unite continued lines.
   if not page or page.isspace():
     return []
   page = page.strip()
@@ -153,6 +158,7 @@ def process_single_page(page, has_dashes):
   return page_text
 
 def process_pages(book_pages):
+  # Process all pages one by one.
   book_pages = crop_header_footer(book_pages)
   if len(book_pages) == 0: return ""
   first_page = book_pages[0]
