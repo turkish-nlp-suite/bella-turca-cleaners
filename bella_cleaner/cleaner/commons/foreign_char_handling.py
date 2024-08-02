@@ -10,7 +10,7 @@ def clean_korean_chars(text):
 
 
 def clean_arabic_chars(text):
-  text = re.sub(r"[ﺀ-ﻱ]", " ", text):
+  text = re.sub(r"[ﺀ-ﻱ]", " ", text)
   text =  re.sub(r"[\u0621-\u064a\ufb50-\ufdff\ufe70-\ufefc]", " ", text)
   return text
 
