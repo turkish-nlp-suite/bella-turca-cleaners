@@ -75,21 +75,25 @@ class Cleaner:
 
 
   def eval_custom_config(self):
-    # validate the configuration file
+    # Validate the configuration file
     yaml_keys = self.custom_config.keys()
     list_of_keys = ["replace", "delete", "custom_code", "crop_header_footer", "keep_emoticon", "kill_foreign_chars", "has_pages"]
     assert all(key in list_of_keys for key in yaml_keys), "Custom config keys should be replace, delete, custom_code, crop_header_footer, keep_emoticon, kill_foreign_chars, has_pages"
 
   def configure_extras(self):
+    # Configure extra settings from the config.yaml
     if not self.custom_config: return
 
+    # Process extra replacements & deletions
     self.replace_extra = self.custom_config.get("replace", None)
     self.delete_extra = self.custom_config.get("delete", None)
     self.handle_extra_reps_dels()
 
+    # Process extra cleaning code
     self.custom_code = self.custom_config.get("custom_code", False)
     self.handle_custom_code()
 
+    # Process header footer parsers
     self.crophf = self.custom_config.get("crop_header_footer", [])
     self.handle_croppers()
 
@@ -97,23 +101,29 @@ class Cleaner:
     self.keep_emojis = self.custom_config.get("keep_emojis", "no")
     self.kill_non_latin_chars = clean_after_latin_with_emojis if self.keep_emojis == "yes" else clean_after_latin
 
+    # Arrange Arabic, Korean, Chinese chars procesing
     self.kill_fc = self.custom_config.get("kill_foreign_chars", [])
     self.handle_foreign_chars()
 
+    # Set up page processing code, for the book, article and other PDF genres.
+    # This method usually crop the page numbers, parse book openings and bibliography. Done in custom way for books and articles separately.
     has_pages = self.custom_config.get("has_pages", "no")
     self.pages = True if has_pages=="yes" else False
     self.handle_page_code()
 
   def handle_page_code(self):
+    # Load page code from config dir
     if not self.pages: return
     module = importlib.import_module(self.custom_mod + ".pages", package="bella_cleaner")
     self.process_pages = module.process_pages
 
   def handle_custom_code(self):
+    # Load custom code from config dir
     module = importlib.import_module(self.custom_mod + ".custom_clean", package="bella_cleaner")
     self.custom_clean = module.custom_clean
 
   def handle_croppers(self):
+    # Load header footer code from config dir
     if self.crophf:
       if "footer" in self.crophf:
         module = importlib.import_module(self.custom_mod + ".footer", package="bella_cleaner")
@@ -124,6 +134,7 @@ class Cleaner:
         self.crop_header = module.crop_header
 
   def handle_foreign_chars(self):
+    # Arrange foreign char killing
     def compose2(f, g):
       return lambda *a, **kw: f(g(*a, **kw))
 
@@ -142,6 +153,8 @@ class Cleaner:
 
     
   def handle_extra_reps_dels(self):
+    # Arrange what to do with extra replacements and deletions. 
+    # Extra list of replacements and deletions can override the base ones or we can use both. 
     if self.replace_extra:
       extras = self.replace_extra[0]["extras"]
       if extras in ["append", "override"]:
