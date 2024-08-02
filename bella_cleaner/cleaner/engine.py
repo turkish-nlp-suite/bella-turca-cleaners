@@ -98,7 +98,7 @@ class Cleaner:
     self.handle_croppers()
 
     # Arrange keeping emojis
-    self.keep_emojis = self.custom_config.get("keep_emojis", "no")
+    self.keep_emojis = self.custom_config.get("keep_emoticon", "no")
     self.kill_non_latin_chars = clean_after_latin_with_emojis if self.keep_emojis == "yes" else clean_after_latin
 
     # Arrange Arabic, Korean, Chinese chars procesing
@@ -135,11 +135,8 @@ class Cleaner:
 
   def handle_foreign_chars(self):
     # Arrange foreign char killing
-    def compose2(f, g):
-      return lambda *a, **kw: f(g(*a, **kw))
-
-    def compose(*fs):
-      return functools.reduce(compose2, fs)
+    def compose(funcs):
+      return functools.reduce(lambda f, g: lambda x: f(g(x)), funcs, lambda x: x)
 
     func_list = []
     if self.kill_fc:
