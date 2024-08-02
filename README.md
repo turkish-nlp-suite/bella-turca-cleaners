@@ -50,7 +50,9 @@ Fields are as follows:
 **custom_code:** Whether you have custom code you wanna add on top of the basic cleaning code.
 **keep_emoticon:** Whether you wanna kill or keep emoticon characters. For web crawl type genres, we kep emoticons and for academical text we killed emoticon.
 **kill_foreign_chars:** Whether you wanna kill or keep some special alphabet characters From Arabic, Chinese or Korean alphabet. We kept these sort of characters in AcademiaCrawl, because they refer to entity names. In web crawl type grenres, usually they're trash and we delete them.
-***has_pages**: This parameter is for book and article types where there are several pages. We processed the first and the last page individually as first page usually contains book metadata and last pages might contain bibliography. Also one can make processing per page, such as deleting page numbers and headers.  
+**has_pages**: This parameter is for book and article types where there are several pages. We processed the first and the last page individually as first page usually contains book metadata and last pages might contain bibliography. Also one can make processing per page, such as deleting page numbers and headers.  
+
+For each of these fields, if you want to include custom code you put it under that directory. Please navigate to `bella_cleaner/cleaner/configs/` for the examples.
 
 
 ### Examples
