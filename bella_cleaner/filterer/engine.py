@@ -2,7 +2,7 @@ import re, os, yaml, importlib, functools
 import pycld2 as cld2
 import unicodedata
 
-from split_into_sentences import split_into_sentences
+from bella_cleaner.filterer.split_into_sentences import split_into_sentences
 
 
 
@@ -10,17 +10,17 @@ class Filterer:
   def __init__(self, base_dir= "turkish_corpus_cleaner", config_name=None):
     # Setup some dirs
     filterer_dir = os.path.join(base_dir,  "bella_cleaner", "filterer")
-    configs_dir = os.path.join(cleaner_dir, "configs")
+    configs_dir = os.path.join(filterer_dir, "configs")
 
 
     # Setup defaults
-    id_func = lambda x: x
+    no_func = lambda x: False
 
     # Load and arrange custom config
     self.sent_char_lim, self.sent_word_lim = 0, 0
     self.doc_char_lim, self.doc_word_lim, self.doc_sent_lim = 0, 0, 0
-    self.sent_qual_filterer, self.sent_topic_filterer  = id_func, id_func
-    self.doc_qual_filterer, self.doc_topic_filterer  = id_func, id_func
+    self.sent_qual_filterer, self.sent_topic_filterer  = no_func, no_func
+    self.doc_qual_filterer, self.doc_topic_filterer  = no_func, no_func
 
     
     if config_name is not None:
@@ -42,7 +42,7 @@ class Filterer:
 
 
   def filter_by_lang(self, text):
-    return is_english(text) # to filter or not to filter
+    return self.is_english(text) # to filter or not to filter
 
   def filter_sent_by_length(self, sentence):
     if len(sentence) <= self.sent_char_lim:
@@ -53,8 +53,8 @@ class Filterer:
         return True
     return False
 
-  def filter_sent(self, sentence):
-    return self.filter_sent_by_length(sentence) or self.filter_by_lang(sentence) \\
+  def filter_sentence(self, sentence):
+    return self.filter_sent_by_length(sentence) or self.filter_by_lang(sentence) or \
            self.sent_qual_filterer(sentence) or self.sent_topic_filterer(sentence)
 
 
@@ -71,7 +71,7 @@ class Filterer:
 
 
   def filter_doc(self, doc, sentences):
-    return self.filter_doc_by_length(doc, sentences) or self.filter_by_lang(doc) \\
+    return self.filter_doc_by_length(doc, sentences) or self.filter_by_lang(doc) or \
            self.doc_qual_filterer(doc) or self.doc_topic_filterer(doc)
 
 
@@ -103,22 +103,22 @@ class Filterer:
     # Arrange keeping emojis
 
 
-  def handle_topic_filt():
+  def handle_topic_filt(self):
     if self.topic_filt:
       if "document" in sellf.topic_filt:
-       module = importlib.import_module(self.custom_mod + "topic_document", package="bella_cleaner")
+       module = importlib.import_module(self.custom_mod + ".topic_document", package="bella_cleaner")
        self.doc_topic_filterer = module.filter
       if "sentence" in self.topic_filt:
-       module = importlib.import_module(self.custom_mod + "topic_sentence", package="bella_cleaner")
+       module = importlib.import_module(self.custom_mod + ".topic_sentence", package="bella_cleaner")
        self.sent_topic_filterer = module.filter
 
-  def handle_quality_filt():
+  def handle_quality_filt(self):
     if self.qual_filt:
       if "document" in self.qual_filt:
-       module = importlib.import_module(self.custom_mod + "quality_document", package="bella_cleaner")
+       module = importlib.import_module(self.custom_mod + ".quality_document", package="bella_cleaner")
        self.doc_qual_filterer = module.filter
       if "sentence" in self.qual_filt:
-       module = importlib.import_module(self.custom_mod + "quality_sentence", package="bella_cleaner")
+       module = importlib.import_module(self.custom_mod + ".quality_sentence", package="bella_cleaner")
        self.sent_qual_filterer = module.filter
 
 
@@ -130,9 +130,14 @@ class Filterer:
       if "document" in self.langf:
           self.filter_docs_by_lang = True
 
-  def hande_length_lims(self):
+  def handle_length_lims(self):
+    #print(self.len_lims)
+    if not self.len_lims:
+      return
     if self.len_lims:
-      for part, details in self.len_lims.items():
+      for detail_dict in self.len_lims:
+        part, details = zip(*detail_dict.items())
+        part, details = part[0], details[0]
         if part == "sentence":
           for elt in details:
             if "char_limit" in elt:
@@ -161,12 +166,12 @@ class Filterer:
 
   def filter(self, doc):
     sentences = split_into_sentences(doc)
-    fd = sef.filter_doc(doc, sentences)
+    fd = self.filter_doc(doc, sentences)
 
     if fd: return None  # Kill this doc completely
 
     paragraphs = doc.split("\n")
-    paragraphs = list(map(_filter, paragraphs))
+    paragraphs = list(map(self._filter, paragraphs))
     paragraphs = [parg for parg in paragraphs if parg and not parg.isspace()] # filter possiby empty paragraphs
     doc = "\n".join(paragraphs)
     return doc
