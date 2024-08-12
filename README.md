@@ -1,3 +1,5 @@
+![bella_trans](https://github.com/user-attachments/assets/0a0f00ff-f9b6-4477-9f4b-fa805ed08bf6)
+
 # Bella Turca corpus cleaners
 
 Welcome to Bella Turca's cleaning code. [Bella Turca](https://huggingface.co/datasets/turkish-nlp-suite/BellaTurca) is a big & diverse corpus for training Turkish models and these are the cleaning code used during creation of Bella Turca. 
