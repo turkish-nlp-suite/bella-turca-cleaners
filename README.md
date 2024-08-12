@@ -115,9 +115,8 @@ lang:
 Fields are as follows:
 
 **topic:** Whether you wanna filter out the whole document or some sentences from the document of specific topics. Topic filtering code can be anything, a statistical method or keyword filtering as long as it's a boolean function.  
-
 **length:** Here one can filter too short documents and too short sentences. The minimum length can be in word count or character count.  
-**quality:" Whether you wanna filter out the whole document or some sentences according to quality criterion.  
+**quality:** Whether you wanna filter out the whole document or some sentences according to quality criterion.  
 **lang:**: Filter out non-Turkish documents as a whole, or just filter out non-Turkish sentences.
 
 
