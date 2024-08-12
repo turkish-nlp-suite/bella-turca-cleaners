@@ -12,8 +12,21 @@ The main class `Cleaner` has only one public functionality, cleaning text. This 
 
 ### Code structure
 The code is structured to be modular and separate data needs and the code itself. The main class `Cleaner` includes code for a basic cleaning, then code to load and run custom configuration per genre.  
-At the runtime, a `Cleaner` class objects holds all the data of the given configuration. Configurations are provided by yamls under configuration directories.While creating a `Cleaner` class instance, we provide the place of the custom data directory to `__init__` and that's it.
+At the runtime, a `Cleaner` class objects holds all the data of the given configuration. Configurations are provided by yamls under configuration directories. While creating a `Cleaner` class instance, we provide the place of the custom data directory to `__init__` and that's it.
+Here's how the custom config directories that we used look like this:
 
+```
+duygu@turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls books/
+custom_clean.py  custom.yaml  __init__.py  page.py
+duygua/turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls crafted_crawl/
+custom_clean.py  custom.yaml  footer.py  __init__.py  __pycache__
+duygu@turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls dergipark/
+custom.yaml  footer.py  header.py  __init__.py  split_into_sentences.py
+duygu@turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls forums/
+custom_clean.py  custom.yaml  __init__.py
+duygu@turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls web_crawl/
+custom_clean.py  custom.yaml  __init__.py
+```
 
 ### Usage
 Following the design above, one has to create a `Cleaner` class object. This class takes two arguments, the base directory and a config name. Looks like this:
