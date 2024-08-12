@@ -4,7 +4,7 @@ Welcome to Bella Turca's cleaning code. [Bella Turca](https://huggingface.co/dat
 
 ## Install
 
-Change directory to the root drectory then make a `python setup.py install`. Install Python versiob/binary up to your taste. 
+Change directory to the root drectory then make a `python setup.py install`. Choose Python version/binary and environment settings up to your taste. 
 
 ## Cleaning code
 ### Functionality
@@ -18,12 +18,16 @@ Here's how the custom config directories that we used look like this:
 ```
 duygu@turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls books/
 custom_clean.py  custom.yaml  __init__.py  page.py
+
 duygua/turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls crafted_crawl/
 custom_clean.py  custom.yaml  footer.py  __init__.py  __pycache__
+
 duygu@turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls dergipark/
 custom.yaml  footer.py  header.py  __init__.py  split_into_sentences.py
+
 duygu@turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls forums/
 custom_clean.py  custom.yaml  __init__.py
+
 duygu@turkish-corpus-cleaner/bella_cleaner/cleaner/configs$ ls web_crawl/
 custom_clean.py  custom.yaml  __init__.py
 ```
@@ -70,10 +74,57 @@ For each of these fields, if you want to include custom code you put it under th
 
 
 ### Examples
-Please navigate to [Examples](https://github.com/turkish-nlp-suite/bella-turca-cleaners/tree/main/examples/cleaner) directory. We included examples of book, academic article and web scrape examples.
+Please navigate to [Examples](https://github.com/turkish-nlp-suite/bella-turca-cleaners/tree/main/examples/cleaner) directory. We included examples of book, academic article and web scrape collection filtering.
 
 
 ## Filtering code
+### Functionality
+The main class `Filterer` has only one public functionality, cleaning text. This method is called `Filterer.filter`.
+
+### Code structure
+The code structure and configuration is same with `Cleaner` class. Here's how an example custom config directory looks like:
+
+```
+duygu@turkish-corpus-cleaner/bella_cleaner/filterer/configs$ ls books/
+custom.yaml  filter_religion.py  quality_document.py  quality_sentence.py  topic_document.py
+```
+
+### Usage
+Usage is also the same with `Cleaner` class. One creates a `Filterer` object and calls the `filter` method. Again, if one wants a custom cleaning, a config directory is a must. A custom yaml looks like this:
+
+```
+topic:
+  - document
+  - sentence
+length:
+  - document:
+     - char_limit: 100
+     - word_limit: 20
+     - sentence_limit: 5
+  - sentence:
+    - word_limit: 5
+    - char_limit: 25
+quality:
+  - document
+  - sentence
+lang:
+  - sentence
+  - document
+```
+
+Fields are as follows:
+
+**topic:** Whether you wanna filter out the whole document or some sentences from the document of specific topics. Topic filtering code can be anything, a statistical method or keyword filtering as long as it's a boolean function.  
+
+**length:** Here one can filter too short documents and too short sentences. The minimum length can be in word count or character count.  
+**quality:" Whether you wanna filter out the whole document or some sentences according to quality criterion.  
+**lang:**: Filter out non-Turkish documents as a whole, or just filter out non-Turkish sentences.
+
+
+For each of these fields, if you want to include custom code you put it under that directory. Please navigate to `bella_cleaner/filterer/configs/` for the examples.
+
+### Examples
+Please navigate to [Examples](https://github.com/turkish-nlp-suite/bella-turca-cleaners/tree/main/examples/filterer) directory. We included examples of academic article and web scrape collection filtering.
 
 
 ## Licence
