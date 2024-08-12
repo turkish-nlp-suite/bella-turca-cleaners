@@ -1,6 +1,18 @@
 import re
-from filter_religion import is_religion
+from bella_cleaner.filterer.configs.books.filter_religion import is_religion
 import itertools
+
+def is_turkish(text):
+  try:
+    isReliable, textBytesFound, details = cld2.detect(text)
+    lang = details[0]
+    if lang[0] == "TURKISH":
+      return True
+  except:
+    return False
+  return False
+
+
 
 copler = [
     "ġ",
@@ -56,6 +68,7 @@ copler = [
 ]
 
 def is_cop(text):
+  # Filter sentences with trash looking chars
   if any([cop in text for cop in copler]):
     return True
   if text.endswith("Yayınları."):
@@ -63,9 +76,8 @@ def is_cop(text):
   return False
 
 
-
-
 def too_long_words(text):
+  # Filter sentences with words of length more than 50
   if re.search(r"\w{50}", text):
     return True
   return False
@@ -73,18 +85,21 @@ def too_long_words(text):
 
 
 def has_arabic_chars(text):
+  # Filter sentences with Arabic chars
   if re.search(r"[ء-ي]", text): 
     return True
   return False
 
 
 def is_too_short(text):
+  # Filter sentences with less than 5 chars
   if len(text) <= 5:
     return True
   return False
 
 
 def contains_consec_consonants(text):
+  # Filter sentences with too many consecutive consonants
   consos = "bcçdfghjklmnprsştqvwyzx"
   text = text.lower()
   count = 0
@@ -101,6 +116,7 @@ def contains_consec_consonants(text):
   return False
 
 def contains_consec_vowels(text):
+  # Filter sentences with too many consecutive vowels
   vowels = "aeiıoöuü"
   text = text.lower()
   charseq=""
@@ -116,9 +132,9 @@ def contains_consec_vowels(text):
       charseq=""
   return False
 
-sent  = "Büyükelçi Noallles'den Digiçlerl Baka٥ Veklll FaUUOr٥s.."
 
 def contains_single_letters(text):
+  # Filter sentences single characters
   if re.search(r"\b\w \w \w \w \w\b", text):
     return True
   shorts1 =  re.search(r"\b\w\w \w\w \w\b", text)
@@ -133,12 +149,12 @@ def contains_single_letters(text):
       if any([shrtw in matchw for shrtw in legits]):
         return False
       else:
-        #print("search 5")
         return True
   return False
 
 
 def too_many_single_digits(text):
+  # Filter sentences with too many short words
   words = text.split()
   shortwrds = [wrd for wrd in words if len(wrd) <=2]
   shrts = len(shortwrds)
@@ -148,6 +164,7 @@ def too_many_single_digits(text):
   return False
 
 def contains_mistakes(text):
+  # If the doc contains misc char mistakes
   bad_patterns = [
         r"\w[!;:?()><{}\~·]\w",
         r" [!,;:?.)><~{}·]\w",

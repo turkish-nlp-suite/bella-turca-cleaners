@@ -7,7 +7,7 @@ def is_religion(text):
     if token.startswith("el-"):
       nextch = token[4:]
       if nextch and nextch.isupper():
-        print("el-", nextch, "rel")
+        #print("el-", nextch, "rel")
         return True
 
   text = text.lower()
