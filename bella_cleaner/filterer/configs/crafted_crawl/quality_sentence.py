@@ -1,8 +1,9 @@
 
 
 def filter(sentence):
-  if not any([line.endswith(punct) for punct in [".", ",", "!"]]):
+  # If sentence doesn't have an EOS punct
+  if not any([sentence.endswith(punct) for punct in [".", ",", "!"]]):
     return True
-  if line.isupper():
+  if sentence.isupper():
     return True
   return False
