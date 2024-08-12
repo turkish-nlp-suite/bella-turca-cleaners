@@ -1,3 +1,4 @@
+
 def is_religion(text):
   # bin e dikkat
   tokens = text.split()
@@ -32,4 +33,5 @@ def is_religion(text):
 
 
 def filter(text):
+  # Filter docs with old religion words
   return is_religion(text)
