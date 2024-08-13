@@ -42,8 +42,8 @@ class Cleaner:
     replace_file = os.path.join(self.commons_dir, "replace.txt")
     delete_file = os.path.join(self.commons_dir, "delete.txt")
 
-    replacements = open(replace_file, "r").read().split("\n")
-    deletions = open(delete_file, "r").read().split("\n")
+    replacements = open(replace_file, "r", encoding="utf8").read().split("\n")
+    deletions = open(delete_file, "r", encoding="utf8").read().split("\n")
 
     self.replacements = [tuple(" ".join(line.strip().split()).split(" ")) for line in replacements if line]
     self.deletions = [line.strip() for line in deletions if line]
@@ -156,7 +156,7 @@ class Cleaner:
       extras = self.replace_extra[0]["extras"]
       if extras in ["append", "override"]:
         replace_file = os.path.join(self.custom_dir, "replace.txt")
-        new_pairs = open(replace_file, "r").read().split("\n")
+        new_pairs = open(replace_file, "r", encoding="utf8").read().split("\n")
         replacements = [tuple(" ".join(line.strip().split()).split(" ")) for line in new_pairs if line]
       if extras == "append":
         self.replacements += replacements
@@ -166,7 +166,7 @@ class Cleaner:
       extras = self.delete_extra[0]["extras"]
       if extras in ["append", "override"]:
         delete_file = os.path.join(self.custom_dir, "delete.txt")
-        new_dels = open(replace_file, "r").read().split("\n")
+        new_dels = open(replace_file, "r", encoding="utf8").read().split("\n")
         deletions = [line.strip() for line in new_dels if line]
       if extras == "append":
         self.deletions += deletions
