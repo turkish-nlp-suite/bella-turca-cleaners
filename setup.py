@@ -18,5 +18,7 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         "pyyaml",
+        "pycld2",
+        "sentence_splitter",
     ],
 )
