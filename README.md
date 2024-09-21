@@ -131,7 +131,24 @@ Please navigate to [Examples](https://github.com/turkish-nlp-suite/bella-turca-c
 ## Licence
 MIT licenced, feel free to use and replicate the code as you wish.
 
-## Citation
-Coming soon!
+## Citation and paper
 
+[Bella Turca: A Large-Scale Dataset of Diverse Text Sources for Turkish Language Modeling](https://link.springer.com/chapter/10.1007/978-3-031-70563-2_16)
+
+```
+@InProceedings{10.1007/978-3-031-70563-2_16,
+author="Altinok, Duygu",
+editor="N{\"o}th, Elmar
+and Hor{\'a}k, Ale{\v{s}}
+and Sojka, Petr",
+title="Bella Turca: A Large-Scale Dataset of Diverse Text Sources for Turkish Language Modeling",
+booktitle="Text, Speech, and Dialogue",
+year="2024",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="196--213",
+abstract="In recent studies, it has been demonstrated that incorporating diverse training datasets enhances the overall knowledge and generalization capabilities of large-scale language models, especially in cross-domain scenarios. In line with this, we introduce Bella Turca: a comprehensive Turkish text corpus, totaling 265GB, specifically curated for training language models. Bella Turca encompasses 25 distinct subsets of 4 genre, carefully chosen to ensure diversity and high quality. While Turkish is spoken widely across three continents, it suffers from a dearth of robust data resources for language modelling. Existing transformers and language models have primarily relied on repetitive corpora such as OSCAR and/or Wiki, which lack the desired diversity. Our work aims to break free from this monotony by introducing a fresh perspective to Turkish corpora resources. To the best of our knowledge, this release marks the first instance of such a vast and diverse dataset tailored for the Turkish language. Additionally, we contribute to the community by providing the code used in the dataset's construction and cleaning, fostering collaboration and knowledge sharing.",
+isbn="978-3-031-70563-2"
+}
+```
   
